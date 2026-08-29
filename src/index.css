@@ -1,1 +1,238 @@
 @import "tailwindcss";
+
+/* ============================================================
+   SkillSignal Sessions — design tokens
+   Broadcast control-room: deep ink, electric cyan + lime signal
+   ============================================================ */
+
+:root,
+[data-theme="dark"] {
+  --bg: #070b14;
+  --surface: #0c1322;
+  --surface-2: #111b30;
+  --surface-3: #17233d;
+  --line: #1d2a45;
+  --line-strong: #2b3d63;
+  --ink: #e9f0fa;
+  --muted: #8ba0c0;
+  --faint: #5c7093;
+  --accent: #35e0e6;
+  --accent-ink: #35e0e6;
+  --accent-soft: rgba(53, 224, 230, 0.12);
+  --accent2: #b8f04f;
+  --accent2-ink: #b8f04f;
+  --accent2-soft: rgba(184, 240, 79, 0.12);
+  --danger: #ff6470;
+  --danger-soft: rgba(255, 100, 112, 0.12);
+  --warn: #f5b04c;
+  --ok: #57e39a;
+  --shadow-glow: 0 0 0 1px rgba(53, 224, 230, 0.25), 0 8px 40px -12px rgba(53, 224, 230, 0.35);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #eef2f9;
+  --surface: #ffffff;
+  --surface-2: #f5f8fd;
+  --surface-3: #e9eff9;
+  --line: #d9e2f0;
+  --line-strong: #bccbe3;
+  --ink: #0e1728;
+  --muted: #51648a;
+  --faint: #7c8db0;
+  --accent: #0fb5c0;
+  --accent-ink: #0a8d96;
+  --accent-soft: rgba(15, 181, 192, 0.1);
+  --accent2: #b8f04f;
+  --accent2-ink: #4f7a0a;
+  --accent2-soft: rgba(120, 190, 30, 0.14);
+  --danger: #e04352;
+  --danger-soft: rgba(224, 67, 82, 0.1);
+  --warn: #c07f1a;
+  --ok: #1f9d61;
+  --shadow-glow: 0 0 0 1px rgba(15, 181, 192, 0.3), 0 8px 32px -12px rgba(15, 181, 192, 0.25);
+  color-scheme: light;
+}
+
+/* Room always stays in the dark control-room theme */
+.room-shell {
+  --bg: #070b14;
+  --surface: #0c1322;
+  --surface-2: #111b30;
+  --surface-3: #17233d;
+  --line: #1d2a45;
+  --line-strong: #2b3d63;
+  --ink: #e9f0fa;
+  --muted: #8ba0c0;
+  --faint: #5c7093;
+  --accent: #35e0e6;
+  --accent-ink: #35e0e6;
+  --accent-soft: rgba(53, 224, 230, 0.12);
+  --accent2: #b8f04f;
+  --accent2-ink: #b8f04f;
+  --accent2-soft: rgba(184, 240, 79, 0.12);
+  --danger: #ff6470;
+  --danger-soft: rgba(255, 100, 112, 0.12);
+  --warn: #f5b04c;
+  --ok: #57e39a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent2: var(--accent2);
+  --color-accent2-ink: var(--accent2-ink);
+  --color-accent2-soft: var(--accent2-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-ok: var(--ok);
+  --font-display: "Space Grotesk", "Manrope", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* ---------- base ---------- */
+html, body, #root { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+::selection { background: rgba(53, 224, 230, 0.3); }
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 8px; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+input, textarea, select { font-family: inherit; }
+
+/* ---------- ambient background (grid + radial signal glows) ---------- */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 12% -8%, rgba(53, 224, 230, 0.09), transparent 60%),
+    radial-gradient(820px 540px at 96% 108%, rgba(184, 240, 79, 0.07), transparent 62%),
+    radial-gradient(600px 400px at 78% 12%, rgba(53, 224, 230, 0.05), transparent 60%),
+    var(--bg);
+}
+.ambient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(139, 160, 192, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(139, 160, 192, 0.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, black 30%, transparent 78%);
+}
+.ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px);
+}
+
+/* ---------- keyframes ---------- */
+@keyframes ss-pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(87, 227, 154, 0.5); }
+  60% { box-shadow: 0 0 0 7px rgba(87, 227, 154, 0); }
+}
+.pulse-dot { animation: ss-pulse-dot 1.8s ease-out infinite; }
+
+@keyframes ss-live-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 100, 112, 0.55); }
+  60% { box-shadow: 0 0 0 6px rgba(255, 100, 112, 0); }
+}
+.live-dot { animation: ss-live-dot 1.4s ease-out infinite; }
+
+@keyframes ss-eq {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+.eq-bar {
+  transform-origin: bottom;
+  animation: ss-eq 0.9s ease-in-out infinite;
+}
+
+@keyframes ss-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: ss-marquee 36s linear infinite; }
+
+@keyframes ss-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+.shake { animation: ss-shake 0.4s ease; }
+
+@keyframes ss-blink { 50% { opacity: 0.25; } }
+.blink { animation: ss-blink 1.2s steps(2) infinite; }
+
+@keyframes ss-mic-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 100, 112, 0.45); }
+  100% { box-shadow: 0 0 0 12px rgba(255, 100, 112, 0); }
+}
+.mic-pulse { animation: ss-mic-pulse 1.3s ease-out infinite; }
+
+/* ---------- Stream SDK overrides (room stays on our chrome) ---------- */
+.room-shell .str-video {
+  --str-video__background-color1: var(--surface);
+  --str-video__background-color2: var(--surface-2);
+  --str-video__font-family: var(--font-body);
+}
+.room-shell .str-video__participant-view {
+  background: var(--surface-2);
+  border-radius: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.room-shell .str-video__avatar {
+  background: linear-gradient(150deg, var(--surface-3), var(--surface-2)) !important;
+  border-radius: 12px !important;
+}
+.room-shell .str-video__avatar__initials {
+  color: var(--accent) !important;
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+}
+.room-shell video { background: transparent; }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot, .live-dot, .eq-bar, .marquee-track, .blink, .mic-pulse, .shake {
+    animation: none !important;
+  }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
