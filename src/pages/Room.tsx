@@ -27,6 +27,12 @@ export function Room() {
   useEffect(() => {
     if (cfg.status === "error") {
       push({ title: "Token fetch failed", desc: cfg.error?.message, tone: "danger" });
+    } else if (cfg.status === "ready" && cfg.tokenFallback) {
+      push({
+        title: "Dev token mode",
+        desc: "Token server nahi mila — browser devToken fallback se join ho raha hai (Development env only).",
+        tone: "warn",
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg.status]);
@@ -58,8 +64,9 @@ STREAM_API_KEY=<api key>
 STREAM_SECRET_KEY=<secret>`}
                 </pre>
                 <p className="mt-3 text-[11px] text-faint leading-relaxed">
-                  Hint: agar frontend HTTPS par hai aur token server HTTP par, browser mixed
-                  content block karega — dono ko same scheme par rakho ya token server deploy karo.
+                  Note: token server down ho to app automatically browser devToken fallback pe
+                  chala jata hai (Stream Development env, auth checks off). Yeh screen tabhi aati
+                  hai jab dono paths fail ho jayein.
                 </p>
               </div>
               <div className="mt-5 flex gap-2.5">
@@ -96,6 +103,7 @@ STREAM_SECRET_KEY=<secret>`}
           role={role}
           callId={callId}
           joinPrefs={joinPrefs}
+          tokenFallback={cfg.tokenFallback}
         >
           <RoomShell onRetry={cfg.retry} />
         </CallProvider>

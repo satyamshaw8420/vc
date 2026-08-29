@@ -44,6 +44,8 @@ export interface TokenResponse {
   apiKey: string;
   userId: string;
   mode: string;
+  /** true = token server was unreachable → browser devToken fallback used */
+  fallback: boolean;
 }
 
 export class TokenServerError extends Error {
@@ -54,31 +56,66 @@ export class TokenServerError extends Error {
   }
 }
 
+const sanitizeUserId = (raw: string): string => {
+  const base = String(raw || "")
+    .trim()
+    .slice(0, 48)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return base || `guest-${Math.random().toString(36).slice(2, 8)}`;
+};
+
+/**
+ * Browser-side Stream dev token — identical to `client.devToken(userId)` from
+ * @stream-io/node-sdk (alg: "none", unsigned, 1-week expiry). Accepted ONLY
+ * when the Stream app runs in a Development environment (auth checks off),
+ * so no secret key ever touches the frontend.
+ */
+export function browserDevToken(userId: string): string {
+  const b64url = (obj: Record<string, unknown>) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  const iat = Math.floor(Date.now() / 1000) - 60;
+  const exp = iat + 60 * 60 * 24 * 7;
+  return `${b64url({ typ: "JWT", alg: "none" })}.${b64url({ user_id: userId, iat, exp })}.`;
+}
+
 export async function getStreamToken(displayName: string): Promise<TokenResponse> {
-  const url = `${TOKEN_URL}/token?name=${encodeURIComponent(displayName || "guest")}`;
-  let res: Response;
-  try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 6000);
-    res = await fetch(url, { signal: ctrl.signal });
-    clearTimeout(t);
-  } catch {
-    throw new TokenServerError(
-      "Token server unreachable",
-      "Start it locally:  node token-server.mjs  (expects .env with STREAM_API_KEY + STREAM_SECRET_KEY).",
-    );
+  const userId = sanitizeUserId(displayName || "guest");
+
+  // Dev fallback: token server skipped entirely on https pages (mixed content)
+  const mixedContent =
+    typeof window !== "undefined" &&
+    window.location.protocol === "https:" &&
+    TOKEN_URL.startsWith("http:");
+
+  if (!mixedContent) {
+    const url = `${TOKEN_URL}/token?name=${encodeURIComponent(displayName || "guest")}`;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (res.ok) {
+        const data = (await res.json()) as Omit<TokenResponse, "fallback">;
+        if (data.token && data.apiKey) {
+          return { ...data, fallback: false };
+        }
+      }
+      // non-ok status → fall through to devToken fallback
+    } catch {
+      // unreachable / aborted → fall through to devToken fallback
+    }
   }
-  if (!res.ok) {
-    throw new TokenServerError(
-      `Token server replied ${res.status}`,
-      "Check token-server.mjs logs — credentials may be missing or the Stream app inactive.",
-    );
-  }
-  const data = (await res.json()) as TokenResponse;
-  if (!data.token || !data.apiKey) {
-    throw new TokenServerError("Malformed token response", "Expected { token, apiKey } from /token.");
-  }
-  return data;
+
+  // Fallback path — works because the Stream app is in Development env
+  return {
+    token: browserDevToken(userId),
+    apiKey: STREAM_API_KEY,
+    userId,
+    mode: mixedContent ? "dev-fallback (mixed content)" : "dev-fallback",
+    fallback: true,
+  };
 }
 
 export async function pingTokenServer(): Promise<boolean> {

@@ -10,6 +10,8 @@ export interface CallConfig {
   client: StreamVideoClient | null;
   call: Call | null;
   userId: string;
+  /** true when the browser devToken fallback was used (token server skipped) */
+  tokenFallback: boolean;
   error: { message: string; hint: string } | null;
   retry: () => void;
 }
@@ -23,6 +25,7 @@ export function useCallConfig(displayName: string, callId: string): CallConfig {
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
   const [userId, setUserId] = useState("");
+  const [tokenFallback, setTokenFallback] = useState(false);
   const [error, setError] = useState<{ message: string; hint: string } | null>(null);
   const [attempt, setAttempt] = useState(0);
   const clientRef = useRef<StreamVideoClient | null>(null);
@@ -34,8 +37,9 @@ export function useCallConfig(displayName: string, callId: string): CallConfig {
 
     (async () => {
       try {
-        const { token, apiKey, userId: uid } = await getStreamToken(displayName);
+        const { token, apiKey, userId: uid, fallback } = await getStreamToken(displayName);
         if (cancelled) return;
+        setTokenFallback(fallback);
         const c = new StreamVideoClient({
           apiKey,
           user: { id: uid, name: displayName.trim() || "Guest" },
@@ -70,5 +74,5 @@ export function useCallConfig(displayName: string, callId: string): CallConfig {
 
   const retry = useCallback(() => setAttempt((a) => a + 1), []);
 
-  return { status, client, call, userId, error, retry };
+  return { status, client, call, userId, tokenFallback, error, retry };
 }

@@ -29,6 +29,8 @@ interface CallCtxValue {
   role: Role;
   isMentor: boolean;
   callId: string;
+  /** token came from the browser devToken fallback, not the token server */
+  tokenFallback: boolean;
   callingState: CallingState;
   joinError: string | null;
   participants: StreamVideoParticipant[];
@@ -82,6 +84,7 @@ export function CallProvider({
   role,
   callId,
   joinPrefs,
+  tokenFallback,
   children,
 }: {
   call: Call;
@@ -90,6 +93,7 @@ export function CallProvider({
   role: Role;
   callId: string;
   joinPrefs: JoinPrefs;
+  tokenFallback: boolean;
   children: ReactNode;
 }) {
   const { push } = useToast();
@@ -473,6 +477,7 @@ export function CallProvider({
     call,
     userId,
     displayName,
+    tokenFallback,
     role,
     isMentor: role === "mentor",
     callId,

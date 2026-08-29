@@ -8,7 +8,7 @@ import { Button, Modal, StatusDot, Tooltip } from "./ui";
 import { InviteCardBody } from "./InviteCard";
 
 export function TopBar() {
-  const { callId, startedAt, participants, callingState, latencyMs } = useCallCtx();
+  const { callId, startedAt, participants, callingState, latencyMs, tokenFallback } = useCallCtx();
   const timer = useTimer(startedAt);
   const { copied, copy } = useClipboard();
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -72,6 +72,14 @@ export function TopBar() {
 
       {/* right cluster */}
       <div className="ml-auto flex items-center gap-2">
+        {tokenFallback && (
+          <Tooltip label="Token server skip — browser devToken (Development env only). Production mein token server hi use hoga." side="top">
+            <span className="hidden md:flex items-center gap-1.5 rounded-lg border border-warn/35 bg-warn/10 px-2.5 h-8 font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-warn">
+              <span className="h-1.5 w-1.5 rounded-full bg-warn" />
+              Dev token
+            </span>
+          </Tooltip>
+        )}
         <Tooltip label={`Connection: ${qualityLabel}`}>
           <span className="hidden sm:flex items-center gap-2 rounded-lg border border-line bg-surface-2 px-2.5 h-8">
             {qualityTone === "danger" ? (

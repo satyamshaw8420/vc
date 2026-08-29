@@ -507,9 +507,9 @@ export function Lobby() {
               <li className="flex items-center justify-between text-xs font-semibold">
                 <span className="text-muted">Token server · :8002</span>
                 <span className="flex items-center gap-2">
-                  <StatusDot tone={tokenOk === null ? "muted" : tokenOk ? "ok" : "danger"} pulse={tokenOk === true} />
-                  <span className={tokenOk ? "text-ok" : tokenOk === false ? "text-danger" : "text-faint"}>
-                    {tokenOk === null ? "pinging…" : tokenOk ? "operational" : "down"}
+                  <StatusDot tone={tokenOk === null ? "muted" : tokenOk ? "ok" : "warn"} pulse={tokenOk === true} />
+                  <span className={tokenOk ? "text-ok" : tokenOk === false ? "text-warn" : "text-faint"}>
+                    {tokenOk === null ? "pinging…" : tokenOk ? "operational" : "down · devToken fallback on"}
                   </span>
                 </span>
               </li>
